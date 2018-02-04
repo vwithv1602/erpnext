@@ -16,6 +16,10 @@ from erpnext.controllers.selling_controller import SellingController
 from erpnext.accounts.doctype.subscription.subscription import get_next_schedule_date
 from erpnext.selling.doctype.customer.customer import check_credit_limit
 
+from erpnext.vlog import vwrite
+from erpnext_ebay.utils import send_ebay_m2m_message
+from erpnext_ebaytwo.utils import send_ebaytwo_m2m_message
+
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
 }
@@ -817,3 +821,30 @@ def get_default_bom_item(item_code):
 	bom = bom[0].name if bom else None
 
 	return bom
+
+def update_item_group_item_name_in_sales_order(sales_order,method):
+	so = sales_order
+	so.item_name=so.get("items")[0].get("item_name")
+	so.item_group=so.get("items")[0].get("item_group")
+
+def trigger_ebay_m2m_message(sales_order,method):
+	so = sales_order.__dict__
+	if(not so.get("amended_from") and ((so.get("ebay_buyer_id") and so.get("ebay_order_id")) or (so.get("ebaytwo_buyer_id") and so.get("ebaytwo_order_id")))):
+		if(so.get("item_group")=='LED TV'):
+			subject = "Important: LED TV Order Confirmation"
+			message_body_code = "sales_order_for_led_tv"
+			item_code = so.get("items")[0].__dict__.get("item_code")
+			if so.get("ebay_buyer_id"):
+				# itemid = frappe.db.get_value("Item", item_code, "ebay_product_id")
+				orderid = so.get("ebay_order_id")
+				orderidarray = orderid.split("-")
+				itemid = orderidarray[0]
+				recipient = so.get("ebay_buyer_id")
+				send_ebay_m2m_message(itemid,subject,message_body_code,recipient)
+			else:
+				# itemid = frappe.db.get_value("Item", item_code, "ebaytwo_product_id")
+				orderid = so.get("ebaytwo_order_id")
+				orderidarray = orderid.split("-")
+				itemid = orderidarray[0]
+				recipient = so.get("ebaytwo_buyer_id")
+				send_ebaytwo_m2m_message(itemid, subject, message_body_code, recipient)
