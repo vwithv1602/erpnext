@@ -67,7 +67,7 @@ class SalesSummary(object):
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on  sii.parent=si.name 
-		where (DAY(si.posting_date) = DAY(NOW()- INTERVAL 1 DAY) and MONTH(si.posting_date) = MONTH(NOW()- INTERVAL 1 DAY) and YEAR(si.posting_date) = YEAR(NOW()- INTERVAL 1 DAY)) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
+		where (DAY(si.posting_date) = DAY(NOW()) and MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
 		{0}
 		group by sii.item_group,si.sales_channel
 		""".format(conditions))
