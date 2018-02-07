@@ -353,7 +353,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None):
 		"label": _("Account"),
 		"fieldtype": "Link",
 		"options": "Account",
-		"width": 300
+		"width": 180
 	}]
 	if company:
 		columns.append({
@@ -369,7 +369,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None):
 			"label": period.label,
 			"fieldtype": "Currency",
 			"options": "currency",
-			"width": 150
+			"width": 90
 		})
 	if periodicity!="Yearly":
 		if not accumulated_values:
