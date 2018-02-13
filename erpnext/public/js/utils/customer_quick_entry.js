@@ -25,8 +25,8 @@ frappe.ui.form.CustomerQuickEntryForm = frappe.ui.form.QuickEntryForm.extend({
 			fieldtype: "Column Break"
 		},
 		{
-			label: __("Mobile Number"),
-			fieldname: "mobile_no",
+			label: __("Phone"),
+			fieldname: "phone",
 			fieldtype: "Data"
 		},
 		{
