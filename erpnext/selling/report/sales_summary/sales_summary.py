@@ -157,26 +157,26 @@ class SalesSummary(object):
 			inner join `tabSales Invoice Item` sii on sii.parent=si.name
 			inner join `tabAddress` a on a.name=si.customer_address
 			inner join `tabLead` l on ((REPLACE(l.mobile_no," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.phone," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.email_id," ","")=REPLACE(a.email_id," ","")))
-			where sii.item_group = '{0}' and (DAY(si.posting_date) = DAY(NOW()) and MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) {1}
-			""".format(item_group,conditions))
+			where sii.item_group = '{0}' and si.sales_channel='{1}' and (DAY(si.posting_date) = DAY(NOW()) and MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) {2}
+			""".format(item_group,sales_channel,conditions))
 
 			assisted_weekly_res = frappe.db.sql("""
 			select distinct si.name,a.phone,a.email_id,si.customer_address,sii.item_group from `tabSales Invoice` si
 			inner join `tabSales Invoice Item` sii on sii.parent=si.name
 			inner join `tabAddress` a on a.name=si.customer_address
 			inner join `tabLead` l on ((REPLACE(l.mobile_no," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.phone," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.email_id," ","")=REPLACE(a.email_id," ","")))
-			where sii.item_group = '{0}' and si.posting_date >= '{1}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) {2}
-			""".format(item_group,weekstartdate,conditions))
+			where sii.item_group = '{0}' and si.sales_channel='{1}' and si.posting_date >= '{2}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) {3}
+			""".format(item_group,sales_channel,weekstartdate,conditions))
 
 			assisted_monthly_res = frappe.db.sql("""
 			select distinct si.name,l.mobile_no,l.phone,l.email_id from `tabSales Invoice` si
 			inner join `tabSales Invoice Item` sii on sii.parent=si.name
 			inner join `tabAddress` a on a.name=si.customer_address
 			inner join `tabLead` l on ((REPLACE(l.mobile_no," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.phone," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.email_id," ","")=REPLACE(a.email_id," ","")))
-			where sii.item_group = '{0}' and (MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew'
+			where sii.item_group = '{0}' and si.sales_channel='{1}' and (MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew'
 			 and ((l.mobile_no is not NULL and l.mobile_no!='') or (l.phone is not NULL and l.phone!='') or (l.email_id is not NULL and l.email_id!='') ) 
-			 {1}
-			""".format(item_group,conditions))
+			 {2}
+			""".format(item_group,sales_channel,conditions))
 			
 			data.append([item_group]+[sales_channel]+[len(assisted_daily_res)]+t_d_temp+[len(assisted_weekly_res)]+w_d_temp+[len(assisted_monthly_res)]+m_d_temp)
 		# data.append(["<b>Total</b>",total_t_qty,total_t_amt,total_w_qty,total_w_amt,total_m_qty,total_m_amt])
