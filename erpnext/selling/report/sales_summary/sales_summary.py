@@ -21,13 +21,13 @@ class SalesSummary(object):
 		columns = [
 			_("Item Group") + ":Data:160", 
 			_("Sales Channel") + ":Data:120", 
-			_("Assisted Leads(yesterday)") + ":Data:100",
+			_("Assisted Leads(yesterday)") + ":Int:100",
 			_("Qty(yesterday)") + ":Int:100",
 			_("Amount(yesterday)") + ":Currency/currency:140", 
-			_("Assisted Leads(this week)") + ":Data:100",
+			_("Assisted Leads(this week)") + ":Int:100",
 			_("Qty(this week)") + ":Int:100",
 			_("Amount(this week)") + ":Currency/currency:140", 
-			_("Assisted Leads(this month)") + ":Data:100",
+			_("Assisted Leads(this month)") + ":Int:100",
 			_("Qty(this month)") + ":Int:100",
 			_("Amount(this month)") + ":Currency/currency:140",
 		]
