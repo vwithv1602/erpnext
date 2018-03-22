@@ -15,6 +15,11 @@ frappe.query_reports["Sales Summary"] = {
 			"label":__("Sales Type"),
 			"fieldtype":"Select",
 			"options":"" + NEWLINE + "GROSS" + NEWLINE + "CREDIT NOTES"
+		},
+		{
+			"fieldname":"selected_date",
+			"label":__("Date"),
+			"fieldtype":"Date"
 		}
 	],
 	onload: function(report) {
