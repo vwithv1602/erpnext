@@ -11,6 +11,12 @@ from erpnext.vlog import vwrite
 class SalesSummary(object):
 	def __init__(self, filters=None):
 		self.filters = frappe._dict(filters or {})
+		if "selected_date" in self.filters:
+			self.selected_date = self.filters.get("selected_date")
+			self.selected_date_obj = self.datetime.strptime(self.selected_date, '%Y-%m-%d')
+		else:
+			self.selected_date = self.datetime.today().strftime('%Y-%m-%d')
+			self.selected_date_obj = self.datetime.strptime(self.datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d')
 	def run(self, args):
 		columns = self.get_columns()
 		data = self.get_data()
@@ -66,32 +72,38 @@ class SalesSummary(object):
 		month_data = []
 		item_groups_array = []
 		conditions = self.prepare_conditions()
+		
 		today_data_res = frappe.db.sql("""
 		select 
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on  sii.parent=si.name 
-		where (DAY(si.posting_date) = DAY(NOW()) and MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
-		{0}
+		where (DAY(si.posting_date) = DAY('{0}') and MONTH(si.posting_date) = MONTH('{1}') and YEAR(si.posting_date) = YEAR('{2}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
+		{3}
 		group by sii.item_group,si.sales_channel
-		""".format(conditions))
+		""".format(self.selected_date,self.selected_date,self.selected_date,conditions))
 		for qty,amount,item_group,sales_channel in today_data_res:
 			data_row = []
 			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
 			data_row = data_row + [item_group,qty,amount]
 			today_data.append(data_row)
 			item_groups_array.append(item_group)
-		
-		weekstartdate = self.week_range(self.datetime.today())[0]
+		if "selected_date" in self.filters:
+			selected_year,selected_month,selected_day = self.filters.get("selected_date").split('-')
+			weekstartdate = self.week_range(self.selected_date_obj)[0]
+			weekenddate = self.week_range(self.selected_date_obj)[1]
+		else:
+			weekstartdate = self.week_range(self.datetime.today())[0]
+			weekenddate = self.week_range(self.datetime.today())[1]
 		week_data_res = frappe.db.sql("""
 		select 
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on sii.parent=si.name
-		where si.posting_date >= '{0}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
-		{1}
+		where si.posting_date >= '{0}' and si.posting_date <= '{1}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
+		{2}
 		group by sii.item_group,si.sales_channel
-		""".format(weekstartdate,conditions))
+		""".format(weekstartdate,weekenddate,conditions))
 		for qty,amount,item_group,sales_channel in week_data_res:
 			data_row = []
 			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
@@ -104,10 +116,10 @@ class SalesSummary(object):
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on sii.parent=si.name
-		where (MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
-		{0}
+		where (MONTH(si.posting_date) = MONTH('{0}') and YEAR(si.posting_date) = YEAR('{1}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
+		{2}
 		group by sii.item_group,si.sales_channel
-		""".format(conditions))
+		""".format(self.selected_date,self.selected_date,conditions))
 		for qty,amount,item_group,sales_channel in month_data_res:
 			data_row = []
 			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
