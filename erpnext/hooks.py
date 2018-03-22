@@ -11,7 +11,7 @@ app_email = "info@erpnext.com"
 app_license = "GNU General Public License (v3)"
 source_link = "https://github.com/frappe/erpnext"
 
-develop_version = '9.x.x-develop'
+develop_version = '10.x.x-develop'
 
 error_report_email = "support@erpnext.com"
 
@@ -215,6 +215,9 @@ doc_events = {
 		"before_save":"erpnext.stock.doctype.delivery_note.delivery_note.update_item_group_item_name_in_delivery_note",
 		"on_submit":"erpnext.stock.doctype.delivery_note.delivery_note.trigger_ebay_m2m_message"
 	},
+	('Sales Invoice', 'Purchase Invoice'): {
+		'validate': 'erpnext.regional.india.utils.set_place_of_supply'
+	}
 }
 
 scheduler_events = {
