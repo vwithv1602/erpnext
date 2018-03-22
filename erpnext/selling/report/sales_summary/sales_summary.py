@@ -25,17 +25,17 @@ class SalesSummary(object):
 	def get_columns(self):
 		"""return columns based on filters"""
 		columns = [
-			_("Item Group") + ":Data:160", 
-			_("Sales Channel") + ":Data:120", 
+			_("Item Group") + ":Data:90", 
+			_("Channel") + ":Data:80", 
 			_("Assisted Leads(yesterday)") + ":Int:100",
 			_("Qty(yesterday)") + ":Int:100",
-			_("Amount(yesterday)") + ":Currency/currency:140", 
+			_("Amount(yesterday)") + ":Currency/currency:100", 
 			_("Assisted Leads(this week)") + ":Int:100",
 			_("Qty(this week)") + ":Int:100",
-			_("Amount(this week)") + ":Currency/currency:140", 
+			_("Amount(this week)") + ":Currency/currency:100", 
 			_("Assisted Leads(this month)") + ":Int:100",
 			_("Qty(this month)") + ":Int:100",
-			_("Amount(this month)") + ":Currency/currency:140",
+			_("Amount(this month)") + ":Currency/currency:100",
 		]
 		return columns
 
@@ -116,10 +116,10 @@ class SalesSummary(object):
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on sii.parent=si.name
-		where (MONTH(si.posting_date) = MONTH('{0}') and YEAR(si.posting_date) = YEAR('{1}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
-		{2}
+		where (MONTH(si.posting_date) = MONTH('{0}') and YEAR(si.posting_date) = YEAR('{1}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and si.posting_date <= '{2}'
+		{3}
 		group by sii.item_group,si.sales_channel
-		""".format(self.selected_date,self.selected_date,conditions))
+		""".format(self.selected_date,self.selected_date,self.selected_date,conditions))
 		for qty,amount,item_group,sales_channel in month_data_res:
 			data_row = []
 			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
