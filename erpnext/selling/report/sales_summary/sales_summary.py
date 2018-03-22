@@ -103,7 +103,7 @@ class SalesSummary(object):
 		where si.posting_date >= '{0}' and si.posting_date <= '{1}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
 		{2}
 		group by sii.item_group,si.sales_channel
-		""".format(weekstartdate,weekenddate,conditions))
+		""".format(weekstartdate,self.selected_date,conditions))
 		for qty,amount,item_group,sales_channel in week_data_res:
 			data_row = []
 			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
