@@ -217,6 +217,9 @@ doc_events = {
 	},
 	('Sales Invoice', 'Purchase Invoice'): {
 		'validate': 'erpnext.regional.india.utils.set_place_of_supply'
+	},
+	"Lead": {
+		"on_update":"pygapi.lead_hook_create__google_contact"
 	}
 }
 
