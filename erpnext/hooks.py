@@ -206,7 +206,15 @@ doc_events = {
 	},
 	('Sales Invoice', 'Purchase Invoice', 'Delivery Note'): {
 		'validate': 'erpnext.regional.india.utils.set_place_of_supply'
-	}
+	},
+	"Sales Order": {
+		"before_save":"erpnext.selling.doctype.sales_order.sales_order.update_item_group_item_name_in_sales_order",
+		"after_insert":"erpnext.selling.doctype.sales_order.sales_order.trigger_ebay_m2m_message"
+	},
+	"Delivery Note": {
+		"before_save":"erpnext.stock.doctype.delivery_note.delivery_note.update_item_group_item_name_in_delivery_note",
+		"after_insert":"erpnext.stock.doctype.delivery_note.delivery_note.trigger_ebay_m2m_message"
+	},
 }
 
 scheduler_events = {
