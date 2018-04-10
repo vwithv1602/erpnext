@@ -218,6 +218,9 @@ doc_events = {
 		"before_save":"erpnext.stock.doctype.delivery_note.delivery_note.update_item_group_item_name_in_delivery_note",
 		"on_submit":"erpnext.stock.doctype.delivery_note.delivery_note.trigger_ebay_m2m_message"
 	},
+	"Lead": {
+		"on_update":"pygapi.lead_hook_create__google_contact"
+	}
 }
 
 scheduler_events = {
