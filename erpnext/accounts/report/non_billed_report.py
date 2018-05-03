@@ -20,6 +20,10 @@ def get_ordered_to_be_billed_data(args):
 	else:
 		additional_where = ""
 	# <<< Vamsi; 13012018; Excluding return items in 'Delivered Items To Be Billed' report
+	# >>> Vamsi; 08042018; Including closed sales order in 'Delivered Items To Be Billed' report
+	if(doctype!='Delivery Note'):
+		additional_where = """ and `%s`.status != 'Closed' """ % ('tab' + doctype)
+	# <<< Vamsi; 08042018; Including closed sales order in 'Delivered Items To Be Billed' report
 
 
 
@@ -33,7 +37,7 @@ def get_ordered_to_be_billed_data(args):
 		from
 			`{parent_tab}`, `{child_tab}`
 		where
-			`{parent_tab}`.name = `{child_tab}`.parent and `{parent_tab}`.docstatus = 1 and `{parent_tab}`.status != 'Closed'
+			`{parent_tab}`.name = `{child_tab}`.parent and `{parent_tab}`.docstatus = 1 
 			and `{child_tab}`.amount > 0 and round(`{child_tab}`.billed_amt *
 			ifnull(`{parent_tab}`.conversion_rate, 1), {precision}) < `{child_tab}`.base_amount {uyn_custom_condition}
 		order by

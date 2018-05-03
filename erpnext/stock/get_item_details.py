@@ -111,6 +111,8 @@ def process_args(args):
 
 	if args.barcode:
 		args.item_code = get_item_code(barcode=args.barcode)
+		if(isinstance(args.item_code,dict)):
+			args.item_code=args.item_code.get("item_code")
 	elif not args.item_code and args.serial_no:
 		args.item_code = get_item_code(serial_no=args.serial_no)
 
@@ -121,15 +123,22 @@ def process_args(args):
 @frappe.whitelist()
 def get_item_code(barcode=None, serial_no=None):
 	if barcode:
-		item_code = frappe.db.get_value("Item", {"barcode": barcode})
-		if not item_code:
-			frappe.throw(_("No Item with Barcode {0}").format(barcode))
+		item_code = None
+		serial_item_code = None
+		serial_item_code_sql = """ select item_code,serial_no from `tabSerial No` where barcode='%s' """ % barcode
+		serial_item_code_qry = frappe.db.sql(serial_item_code_sql,as_dict=1)
+		for serial_item_code_res in serial_item_code_qry:
+			serial_item_code = serial_item_code_res
+		if not serial_item_code:
+			item_code = frappe.db.get_value("Item", {"barcode": barcode})
+		if not (serial_item_code or item_code):
+			frappe.throw(_("No Item/Serialized Item with Barcode {0}").format(barcode))
 	elif serial_no:
 		item_code = frappe.db.get_value("Serial No", serial_no, "item_code")
 		if not item_code:
 			frappe.throw(_("No Item with Serial No {0}").format(serial_no))
 
-	return item_code
+	return item_code or serial_item_code
 
 
 def validate_item_details(args, item):

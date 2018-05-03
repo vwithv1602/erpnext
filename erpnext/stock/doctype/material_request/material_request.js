@@ -77,27 +77,27 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 		if(doc.docstatus == 1 && doc.status != 'Stopped') {
 			if(flt(doc.per_ordered, 2) < 100) {
 				// make
-				if(doc.material_request_type === "Material Transfer")
+				if(1 || doc.material_request_type === "Material Transfer")
 					cur_frm.add_custom_button(__("Transfer Material"),
 					this.make_stock_entry, __("Make"));
 
-				if(doc.material_request_type === "Material Issue")
+				if(1 || doc.material_request_type === "Material Issue")
 					cur_frm.add_custom_button(__("Issue Material"),
 					this.make_stock_entry, __("Make"));
 
-				if(doc.material_request_type === "Purchase")
+				if(1 || doc.material_request_type === "Purchase")
 					cur_frm.add_custom_button(__('Purchase Order'),
 						this.make_purchase_order, __("Make"));
 
-				if(doc.material_request_type === "Purchase")
+				if(1 || doc.material_request_type === "Purchase")
 					cur_frm.add_custom_button(__("Request for Quotation"),
 						this.make_request_for_quotation, __("Make"));
 
-				if(doc.material_request_type === "Purchase")
+				if(1 || doc.material_request_type === "Purchase")
 					cur_frm.add_custom_button(__("Supplier Quotation"),
 					this.make_supplier_quotation, __("Make"));
 
-				if(doc.material_request_type === "Manufacture")
+				if(1 || doc.material_request_type === "Manufacture")
 					cur_frm.add_custom_button(__("Production Order"),
 					function() { me.raise_production_orders() }, __("Make"));
 

@@ -323,6 +323,14 @@ frappe.ui.form.on('Stock Entry Detail', {
 				callback: function(r) {
 					if (!r.exe){
 						frappe.model.set_value(cdt, cdn, "item_code", r.message);
+						if(typeof r.message=='string'){
+							frappe.model.set_value(cdt, cdn, "item_code", r.message);
+						}else{
+							frappe.model.set_value(cdt, cdn, "item_code", r.message.item_code);
+							setTimeout(function(){
+								frappe.model.set_value(cdt, cdn, "serial_no", r.message.serial_no);
+							},1500);
+						} 
 					}
 				}
 			});
@@ -376,7 +384,7 @@ frappe.ui.form.on('Stock Entry Detail', {
 							d[k] = v;
 						});
 						refresh_field("items");
-						erpnext.stock.select_batch_and_serial_no(frm, d);
+						// erpnext.stock.select_batch_and_serial_no(frm, d);
 					}
 				}
 			});
