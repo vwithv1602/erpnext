@@ -314,6 +314,12 @@ def make_serial_no(serial_no, sle):
 	sr.item_code = sle.item_code
 	sr.company = sle.company
 	sr.via_stock_ledger = True
+	try:
+		item = frappe.db.sql("""select item_group from `tabItem` where item_code=%s""",(sle.item_code), as_dict=True)
+		if item[0].get("item_group") == 'Laptops':
+			sr.barcode = serial_no
+	except Exception,e:
+		frappe.throw(_("Exception raised in erpnext.stock.doctype.serial_no.make_serial_no"))
 	sr.insert()
 
 	sr.warehouse = sle.warehouse
