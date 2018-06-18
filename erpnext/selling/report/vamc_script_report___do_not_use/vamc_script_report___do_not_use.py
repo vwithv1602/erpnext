@@ -6,159 +6,137 @@ import frappe
 from frappe.utils import flt
 from frappe import msgprint, _
 import operator
+from erpnext_ebay.vlog import vwrite
 
-class SalesSummary(object):
-	def __init__(self, filters=None):
-		self.filters = frappe._dict(filters or {})
-	def run(self, args):
-		columns = self.get_columns()
-		data = self.get_data()
-		return columns, data
+class ReadyToShip(object):
+    def __init__(self, filters=None):
+        self.filters = frappe._dict(filters or {})
+        self.selected_date_obj = self.datetime.strptime(self.datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d')
+	self.selected_month = self.datetime.today().strftime('%B')
+        # self.selected_date_obj = self.datetime.strptime("2018-04-28", '%Y-%m-%d')
+        self.today = str(self.datetime.today())[:10]
+        
+    def run(self, args):
+        columns = self.get_columns()
+        data = self.get_data()
+        return columns, data
 
-	def get_columns(self):
-		"""return columns based on filters"""
-		columns = [
-			_("Item Group") + ":Data:160", 
-			_("Sales Channel") + ":Data:120", 
-			_("Qty(today)") + ":Int:100",
-			_("Amount(today)") + ":Currency/currency:140", 
-			_("Qty(this week)") + ":Int:100",
-			_("Amount(this week)") + ":Currency/currency:140", 
-			_("Qty(this month)") + ":Int:100",
-			_("Amount(this month)") + ":Currency/currency:140",
-		]
-		return columns
+    def get_columns(self):
+        """return columns bab on filters"""
+        columns = [
+            _("Item Group") + "::120", 
+            _("Item Code") + ":Data:320",
+            _("RTS Qty") + ":Int:100",
+            _("RTS Grade B Qty") + ":Int:100",
+            _("Other Qty") + ":Int:100",
+            _("Variant") + ":Check:100"
+        ]
+        return columns
 
-	def prepare_conditions(self):
-		conditions = [""]
-		if "sales_type" in self.filters:
-			if self.filters.get("sales_type")=="GROSS":
-				conditions.append(""" si.is_return = 0""")
-			elif self.filters.get("sales_type")=="CREDIT NOTES":
-				conditions.append(""" si.is_return = 1""")
-		return " and ".join(conditions)
-	from datetime import timedelta,datetime
-	def week_range(self,date):
-		"""Find the first/last day of the week for the given day.
-		Assuming weeks start on Sunday and end on Saturday.
-		Returns a tuple of ``(start_date, end_date)``.
-		"""
-		# isocalendar calculates the year, week of the year, and day of the week.
-		# dow is Mon = 1, Sat = 6, Sun = 7
-		year, week, dow = date.isocalendar()
-		# Find the first day of the week.
-		if dow == 7:
-			# Since we want to start with Sunday, let's test for that condition.
-			start_date = date
-		else:
-			# Otherwise, subtract `dow` number days to get the first day
-			start_date = date - self.timedelta(dow)
-		# Now, add 6 for the last day of the week (i.e., count up to Saturday)
-		end_date = start_date + self.timedelta(6)
-		return (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
-	def get_data(self):
-		today_data = []
-		week_data = []
-		month_data = []
-		item_groups_array = []
-		conditions = self.prepare_conditions()
-		today_data_res = frappe.db.sql("""
-		select 
-		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
-		from `tabSales Invoice` si,
-		`tabSales Invoice Item` sii
-		where sii.parent=si.name and (DAY(si.posting_date) = DAY(NOW()- INTERVAL 1 DAY) and MONTH(si.posting_date) = MONTH(NOW()- INTERVAL 1 DAY) and YEAR(si.posting_date) = YEAR(NOW()- INTERVAL 1 DAY)) and si.status not in ('Cancelled','Draft')  
-		{0}
-		group by sii.item_group,si.sales_channel
-		""".format(conditions))
-		for qty,amount,item_group,sales_channel in today_data_res:
-			data_row = []
-			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
-			data_row = data_row + [item_group,qty,amount]
-			today_data.append(data_row)
-			item_groups_array.append(item_group)
-		
-		weekstartdate = self.week_range(self.datetime.today())[0]
-		week_data_res = frappe.db.sql("""
-		select 
-		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
-		from `tabSales Invoice` si,
-		`tabSales Invoice Item` sii
-		where sii.parent=si.name and si.posting_date >= '{0}' and si.status not in ('Cancelled','Draft')  
-		{1}
-		group by sii.item_group,si.sales_channel
-		""".format(weekstartdate,conditions))
-		for qty,amount,item_group,sales_channel in week_data_res:
-			data_row = []
-			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
-			data_row = data_row + [item_group,qty,amount]
-			week_data.append(data_row)
-			item_groups_array.append(item_group)
-		
-		month_data_res = frappe.db.sql("""
-		select 
-		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
-		from `tabSales Invoice` si,
-		`tabSales Invoice Item` sii
-		where sii.parent=si.name and (MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft')  
-		{0}
-		group by sii.item_group,si.sales_channel
-		""".format(conditions))
-		for qty,amount,item_group,sales_channel in month_data_res:
-			data_row = []
-			item_group = "%s (%s)" % (str(item_group),str(sales_channel))
-			data_row = data_row + [item_group,qty,amount]
-			month_data.append(data_row)
-			item_groups_array.append(item_group)
+    def is_duplicate_object(self,name_value_list,name_value):
+        for ext_name_value in name_value_list:
+            if ext_name_value[0]==name_value.get("item_group") and ext_name_value[1]==name_value.get("variant_of") and ext_name_value[2]==name_value.get("qty"):
+                return False
+        return True
 
-		data = []
-		total_t_qty = 0
-		total_w_qty = 0
-		total_m_qty = 0
-		total_t_amt = 0
-		total_w_amt = 0
-		total_m_amt = 0
-		distinct_item_groups = sorted(set(item_groups_array))
-		i=0
-		for item_group in distinct_item_groups:
-			t_d_temp = []
-			for t_d in today_data:
-				if item_group in t_d:
-					t_d_temp = t_d_temp+[t_d[1]]+[t_d[2]]
-					total_t_qty = total_t_qty+t_d[1]
-					total_t_amt = total_t_amt+t_d[2]
-			if not len(t_d_temp):
-				t_d_temp = t_d_temp+[0]+[0]
-			w_d_temp = []
-			for w_d in week_data:
-				if item_group in w_d:
-					w_d_temp = w_d_temp+[w_d[1]]+[w_d[2]]
-					total_w_qty = total_w_qty+w_d[1]
-					total_w_amt = total_w_amt+w_d[2]
-			if not len(w_d_temp):
-				w_d_temp = w_d_temp+[0]+[0]
-			m_d_temp = []
-			for m_d in month_data:
-				if item_group in m_d:
-					m_d_temp = m_d_temp+[m_d[1]]+[m_d[2]]
-					total_m_qty = total_m_qty+m_d[1]
-					total_m_amt = total_m_amt+m_d[2]
-			if not len(m_d_temp):
-				m_d_temp = m_d_temp+[0]+[0]
-			sales_channel = item_group[item_group.find("(")+1:item_group.find(")")]
-			item_group = item_group[0:item_group.find("(")]
-			data.append([item_group]+[sales_channel]+t_d_temp+w_d_temp+m_d_temp)
-		# data.append(["<b>Total</b>",total_t_qty,total_t_amt,total_w_qty,total_w_amt,total_m_qty,total_m_amt])
-		return data
+    from datetime import timedelta,datetime
+    
+    def get_data(self):
+        data = []
+        
+        rts_non_variant_result = self.get_non_variant_result_for_rts()
+        # for item_group,item_code,qty,is_variant in rts_non_variant_result:
+        for item in rts_non_variant_result:
+            if item.get("qty") > 0:
+                data.append([item.get("item_group"),item.get("variant_of"),item.get("qty"),item.get("grade_b_qty"),item.get("other_qty"),0])
+        rts_variant_result = self.get_variant_result_for_rts()
+        # for item_group,item_code,qty,is_variant in rts_variant_result:
+        #     data.append([item_group,item_code,qty,is_variant])
+        for item in rts_variant_result:
+            if self.is_duplicate_object(data,item) and item.get("qty")>0:
+                data.append([item.get("item_group"),item.get("variant_of"),item.get("qty"),item.get("grade_b_qty"),item.get("other_qty"),1])
+        
+        return data
+    def get_non_variant_result_for_rts(self):
+        result = []
+        non_variant_rts_sql = """ 
+        select i.item_group as item_group,i.item_code as item_code,sum(sle.actual_qty) as "qty",i.variant_of from `tabStock Ledger Entry` sle inner join `tabItem` i on i.item_code=sle.item_code where sle.warehouse in ('Ready To Ship - Uyn','Ready To Ship - FZI') and i.variant_of is NULL group by i.item_group,i.item_code limit 10
+        """
+        
+        for item in frappe.db.sql(non_variant_rts_sql,as_dict=1):
+            other_non_variant_rts_sql = """ 
+            select i.item_group as item_group,i.item_code as item_code,sum(sle.actual_qty) as "qty",i.variant_of from `tabStock Ledger Entry` sle inner join `tabItem` i on i.item_code=sle.item_code where sle.warehouse not in ('Ready To Ship - Uyn','Ready To Ship - FZI') and i.variant_of is NULL and i.item_code='%s' group by i.item_group,i.item_code limit 10""" % item.get("item_code")
+            grade_b_non_variant_rts_sql = """ 
+            select i.item_group as item_group,i.item_code as item_code,sum(sle.actual_qty) as "qty",i.variant_of from `tabStock Ledger Entry` sle inner join `tabItem` i on i.item_code=sle.item_code where sle.warehouse in ('Ready To Ship Grade B - Uyn') and i.variant_of is NULL and i.item_code='%s' group by i.item_group,i.item_code limit 10""" % item.get("item_code")
+            grade_b_non_variant_rts_res = frappe.db.sql(grade_b_non_variant_rts_sql,as_dict=1)
+            other_qty_res = frappe.db.sql(other_non_variant_rts_sql,as_dict=1)
+            if len(other_qty_res)>0:
+                other_qty = other_qty_res[0].get("qty")
+            else:
+                other_qty = 0
+            if len(grade_b_non_variant_rts_res)>0:
+                grade_b_qty = grade_b_non_variant_rts_res[0].get("qty")
+            else:
+                grade_b_qty = 0
+            result.append({"item_group":item.get("item_group"),"variant_of":item.get("item_code"),"qty":item.get("qty"),"grade_b_qty":grade_b_qty,"other_qty":other_qty})
+        return result
+    
+    def get_variant_result_for_rts(self):
+        result = []
+        variant_rts_sql = """ 
+        select distinct i.item_code as item_code,i.variant_of as variant_of,i.item_group as item_group from `tabStock Ledger Entry` sle inner join `tabItem` i on i.item_code=sle.item_code where sle.warehouse in ('Ready To Ship - Uyn','Ready To Ship - FZI') and i.variant_of is NOT NULL limit 10
+        """
+        variant_rts_res = frappe.db.sql(variant_rts_sql,as_dict=1)
+        # for each item get non_replaceable_attr_vals
+        for item in variant_rts_res:            
+            # non_replaceable_attr_vals_sql = """ select iva.attribute_value from `tabItem Variant Attribute` iva inner join `tabItem Attribute` ia on iva.attribute = ia.attribute_name where ia.is_replacable = "0" and iva.parent = '%s'""" % item.get("item_code")
+            non_replaceable_attr_vals_sql = """ select iav.abbr from `tabItem Variant Attribute` iva inner join `tabItem Attribute` ia on iva.attribute = ia.attribute_name inner join `tabItem Attribute Value` iav on iav.attribute_value=iva.attribute_value where ia.is_replacable = "0" and iva.parent = '%s' and iva.attribute=iav.parent limit 10 """ % item.get("item_code")
+            non_replaceable_attr_vals = []
+            for nrav in frappe.db.sql(non_replaceable_attr_vals_sql, as_dict=1):
+                non_replaceable_attr_vals.append(nrav.get("abbr"))
+            # Create the where_string to be added in sql
+            where_string = ""
+            nravs = ""
+            for attribute in non_replaceable_attr_vals:
+                where_string += " and item_code like %s " % ('\'%'+attribute+'%\'')
+                nravs += "-%s" % attribute
+            # Prepare the below query to get the balance
+            bal_sql = """ select sum(actual_qty) as bal_qty from `tabStock Ledger Entry` where item_code in (select distinct item_code from  `tabItem Variant Attribute` iva inner join tabItem i on i.item_code = iva.parent where i.variant_of ='%s' %s and warehouse  in ('Ready To Ship - Uyn','Ready To Ship - FZI') ) limit 10""" %(item.get("variant_of"),where_string)
+            other_bal_sql = """ select sum(actual_qty) as bal_qty from `tabStock Ledger Entry` where item_code in (select distinct item_code from  `tabItem Variant Attribute` iva inner join tabItem i on i.item_code = iva.parent where i.variant_of ='%s' %s and warehouse not in ('Ready To Ship - Uyn','Ready To Ship - FZI') ) limit 10""" %(item.get("variant_of"),where_string)
+            grade_b_bal_sql = """ select sum(actual_qty) as bal_qty from `tabStock Ledger Entry` where item_code in (select distinct item_code from  `tabItem Variant Attribute` iva inner join tabItem i on i.item_code = iva.parent where i.variant_of ='%s' %s and warehouse in ('Ready To Ship Grade B - Uyn') ) limit 10""" %(item.get("variant_of"),where_string)
+            grade_b_bal_res = frappe.db.sql(grade_b_bal_sql, as_dict=1)
+            grade_b_qty = grade_b_bal_res[0].get("bal_qty")
+            other_bal_res = frappe.db.sql(other_bal_sql, as_dict=1)
+            other_qty = other_bal_res[0].get("bal_qty")
+            if other_qty < 0:
+                other_qty = 0
+            if grade_b_qty < 0:
+                grade_b_qty = 0
+            for bal_qty in frappe.db.sql(bal_sql, as_dict=1):
+                if bal_qty.get("bal_qty"):
+                    qty_to_be_updated = bal_qty.get("bal_qty")
+                    if qty_to_be_updated > 0:
+                        result.append({"item_group":item.get("item_group"),"variant_of":item.get("variant_of")+nravs,"qty":qty_to_be_updated,"grade_b_qty":grade_b_qty,"other_qty":other_qty})
+                    # vwrite("%s %s : %s" % (item.get("variant_of"),nravs,qty_to_be_updated))
+                #else:
+                    #qty_to_be_updated = 0
+                    #result.append({"item_group":item.get("item_group"),"variant_of":item.get("variant_of")+nravs,"qty":qty_to_be_updated})
+                    # vwrite("%s %s : %s" % (item.get("variant_of"),nravs,qty_to_be_updated))
+        
+        return result
 
 def execute(filters=None):
-	args = {
+    args = {
 
-	}
-	return SalesSummary(filters).run(args)
-	# data = []
+    }
+    return ReadyToShip(filters).run(args)
+    # data = []
 
-	# rows = get_dataget_data()
-	# for row in rows:
-	# 	data.append(row)
-	# return columns,data
+    # rows = get_dataget_data()
+    # for row in rows:
+    #   data.append(row)
+    # return columns,data
+
+
+
+

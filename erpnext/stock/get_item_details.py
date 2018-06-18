@@ -125,7 +125,7 @@ def get_item_code(barcode=None, serial_no=None):
 	if barcode:
 		item_code = None
 		serial_item_code = None
-		serial_item_code_sql = """ select item_code,serial_no from `tabSerial No` where barcode='%s' """ % barcode
+		serial_item_code_sql = """ select item_code,serial_no,warehouse from `tabSerial No` where barcode='%s' """ % barcode
 		serial_item_code_qry = frappe.db.sql(serial_item_code_sql,as_dict=1)
 		for serial_item_code_res in serial_item_code_qry:
 			serial_item_code = serial_item_code_res
