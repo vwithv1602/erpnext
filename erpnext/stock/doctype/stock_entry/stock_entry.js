@@ -330,6 +330,7 @@ frappe.ui.form.on('Stock Entry Detail', {
 							setTimeout(function(){
 								frappe.model.set_value(cdt, cdn, "serial_no", r.message.serial_no);
 								frappe.model.set_value(cdt, cdn, "s_warehouse", r.message.warehouse);
+								frappe.model.set_value(cdt, cdn, "qty", 1);
 							},3000);
 						} 
 					}

@@ -507,6 +507,10 @@ def update_delivery_note_status(docname, status):
 
 def update_item_group_item_name_in_delivery_note(delivery_note,method):
 	dn = delivery_note
+	against_so = dn.__dict__.get("items")[0].get("against_sales_order")
+	if "SO-Amazon-" in against_so:
+		so = frappe.get_doc("Sales Order",against_so)
+		dn.amazon_order_id = so.__dict__.get("amazon_order_id")
 	dn.item_name=dn.get("items")[0].get("item_name")
 	dn.item_group=dn.get("items")[0].get("item_group")
 
