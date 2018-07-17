@@ -182,8 +182,14 @@ standard_queries = {
 
 doc_events = {
 	"Stock Entry": {
-		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-		"on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty"
+		"on_submit": [
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+			"erpnext_uyn_customizations.erpnext_uyn_customizations.doctype.tech_repack.tech_repack.close_tech_repack"
+		],
+		"on_cancel": [
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+			"erpnext_uyn_customizations.erpnext_uyn_customizations.doctype.tech_repack.tech_repack.open_tech_repack"
+		]
 	},
 	"User": {
 		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
