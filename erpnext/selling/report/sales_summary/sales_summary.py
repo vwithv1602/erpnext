@@ -78,7 +78,7 @@ class SalesSummary(object):
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on  sii.parent=si.name 
-		where (DAY(si.posting_date) = DAY('{0}') and MONTH(si.posting_date) = MONTH('{1}') and YEAR(si.posting_date) = YEAR('{2}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
+		where (DAY(si.posting_date) = DAY('{0}') and MONTH(si.posting_date) = MONTH('{1}') and YEAR(si.posting_date) = YEAR('{2}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and sii.amount<>'0'  
 		{3}
 		group by sii.item_group,si.sales_channel
 		""".format(self.selected_date,self.selected_date,self.selected_date,conditions))
@@ -100,7 +100,7 @@ class SalesSummary(object):
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on sii.parent=si.name
-		where si.posting_date >= '{0}' and si.posting_date <= '{1}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' 
+		where si.posting_date >= '{0}' and si.posting_date <= '{1}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and sii.amount<>'0'  
 		{2}
 		group by sii.item_group,si.sales_channel
 		""".format(weekstartdate,self.selected_date,conditions))
@@ -116,7 +116,7 @@ class SalesSummary(object):
 		sum(sii.qty),sum(sii.amount), sii.item_group, si.sales_channel
 		from `tabSales Invoice` as si inner join
 		`tabSales Invoice Item` as sii on sii.parent=si.name
-		where (MONTH(si.posting_date) = MONTH('{0}') and YEAR(si.posting_date) = YEAR('{1}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and si.posting_date <= '{2}'
+		where (MONTH(si.posting_date) = MONTH('{0}') and YEAR(si.posting_date) = YEAR('{1}')) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and si.posting_date <= '{2}' and sii.amount<>'0' 
 		{3}
 		group by sii.item_group,si.sales_channel
 		""".format(self.selected_date,self.selected_date,self.selected_date,conditions))
@@ -169,7 +169,7 @@ class SalesSummary(object):
 			inner join `tabSales Invoice Item` sii on sii.parent=si.name
 			inner join `tabAddress` a on a.name=si.customer_address
 			inner join `tabLead` l on ((REPLACE(l.mobile_no," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.phone," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.email_id," ","")=REPLACE(a.email_id," ","")))
-			where sii.item_group = '{0}' and si.sales_channel='{1}' and (DAY(si.posting_date) = DAY(NOW()) and MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) {2}
+			where sii.item_group = '{0}' and si.sales_channel='{1}' and (DAY(si.posting_date) = DAY(NOW()) and MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) and sii.amount<>'0' {2}
 			""".format(item_group,sales_channel,conditions))
 
 			assisted_weekly_res = frappe.db.sql("""
@@ -177,7 +177,7 @@ class SalesSummary(object):
 			inner join `tabSales Invoice Item` sii on sii.parent=si.name
 			inner join `tabAddress` a on a.name=si.customer_address
 			inner join `tabLead` l on ((REPLACE(l.mobile_no," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.phone," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.email_id," ","")=REPLACE(a.email_id," ","")))
-			where sii.item_group = '{0}' and si.sales_channel='{1}' and si.posting_date >= '{2}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) {3}
+			where sii.item_group = '{0}' and si.sales_channel='{1}' and si.posting_date >= '{2}' and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew' and (l.mobile_no is not NULL or l.phone is not NULL or l.email_id is not NULL) and sii.amount<>'0' {3}
 			""".format(item_group,sales_channel,weekstartdate,conditions))
 
 			assisted_monthly_res = frappe.db.sql("""
@@ -186,7 +186,7 @@ class SalesSummary(object):
 			inner join `tabAddress` a on a.name=si.customer_address
 			inner join `tabLead` l on ((REPLACE(l.mobile_no," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.phone," ","")=REPLACE(a.phone," ","")) or (REPLACE(l.email_id," ","")=REPLACE(a.email_id," ","")))
 			where sii.item_group = '{0}' and si.sales_channel='{1}' and (MONTH(si.posting_date) = MONTH(NOW()) and YEAR(si.posting_date) = YEAR(NOW())) and si.status not in ('Cancelled','Draft') and si.docstatus=1 and si.company='Usedyetnew'
-			 and ((l.mobile_no is not NULL and l.mobile_no!='') or (l.phone is not NULL and l.phone!='') or (l.email_id is not NULL and l.email_id!='') ) 
+			 and ((l.mobile_no is not NULL and l.mobile_no!='') or (l.phone is not NULL and l.phone!='') or (l.email_id is not NULL and l.email_id!='') ) and sii.amount<>'0'  
 			 {2}
 			""".format(item_group,sales_channel,conditions))
 			

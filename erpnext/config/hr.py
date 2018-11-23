@@ -29,6 +29,11 @@ def get_data():
 					"description":_("Upload attendance from a .csv file"),
 					"hide_count": True
 				},
+				{
+					"type": "doctype",
+					"name": "Show Cause Notice",
+					"description": _("Create a Show Cause Notice"),
+				},
 			]
 		},
 		{

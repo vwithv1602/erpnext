@@ -22,6 +22,16 @@ frappe.query_reports["VamC Script Report - Do Not Use"] = {
 			var filters = report.get_values();
 			frappe.set_route('query-report', 'VamC Script Report - Do Not Use', {company: filters.company});
 		});
+	},
+	"formatter":function (row, cell, value, columnDef, dataContext, default_formatter) {
+		value = default_formatter(row, cell, value, columnDef, dataContext);
+		if (columnDef.id == "Employee") {
+			if(jQuery.inArray(dataContext.Employee, ['Incoming Team','Tech Team','Chip Team','Final QC Team','Company Net Productivity']) !== -1){
+				value = "<span style='font-weight:bold'>" + value + "</span>";
+			}
+		}
+
+		return value;
 	}
 	// "formatter": function(row, cell, value, columnDef, dataContext, default_formatter) {
 	// 	console.log('row:'+row)

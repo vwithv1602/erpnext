@@ -102,6 +102,7 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 
 	customer_address: function() {
 		erpnext.utils.get_address_display(this.frm, "customer_address");
+		console.log("in customer_address - populate phone here")
 	},
 
 	shipping_address_name: function() {

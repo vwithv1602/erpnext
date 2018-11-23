@@ -184,7 +184,8 @@ doc_events = {
 	"Stock Entry": {
 		"on_submit": [
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-			"erpnext_uyn_customizations.erpnext_uyn_customizations.doctype.tech_repack.tech_repack.close_tech_repack"
+			"erpnext_uyn_customizations.erpnext_uyn_customizations.doctype.tech_repack.tech_repack.close_tech_repack",
+			"erpnext_uyn_customizations.erpnext_uyn_customizations.doctype.rejects.rejects.log_reject"
 		],
 		"on_cancel": [
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
@@ -226,6 +227,10 @@ doc_events = {
 	},
 	"Lead": {
 		"on_update":"pygapi.lead_hook_create__google_contact"
+	},
+	"Show Cause Notice": {
+		"before_save":"erpnext.hr.doctype.show_cause_notice.show_cause_notice.render_msg",
+		"on_submit":"erpnext.hr.doctype.show_cause_notice.show_cause_notice.render_msg"
 	}
 }
 

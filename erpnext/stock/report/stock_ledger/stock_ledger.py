@@ -19,18 +19,19 @@ def execute(filters=None):
 	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
 
-		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group,
+		data.append([sle.date, sle.item_code, sle.serial_no, item_detail.item_name, item_detail.item_group,
 			item_detail.brand, item_detail.description, sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
 			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
-			sle.batch_no, sle.serial_no, sle.project, sle.company])
+			sle.batch_no, sle.project, sle.company])
 
 	return columns, data
 
 def get_columns():
 	columns = [
 		_("Date") + ":Datetime:95", _("Item") + ":Link/Item:130",
+		_("Serial #") + ":Link/Serial No:100",
 		_("Item Name") + "::100", _("Item Group") + ":Link/Item Group:100",
 		_("Brand") + ":Link/Brand:100", _("Description") + "::200",
 		_("Warehouse") + ":Link/Warehouse:100", _("Stock UOM") + ":Link/UOM:100",
@@ -44,7 +45,6 @@ def get_columns():
 		_("Voucher Type") + "::110",
 		_("Voucher #") + ":Dynamic Link/" + _("Voucher Type") + ":100",
 		_("Batch") + ":Link/Batch:100",
-		_("Serial #") + ":Link/Serial No:100",
 		_("Project") + ":Link/Project:100",
 		{"label": _("Company"), "fieldtype": "Link", "width": 110,
 			"options": "company", "fieldname": "company"}

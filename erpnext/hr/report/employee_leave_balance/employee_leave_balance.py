@@ -9,7 +9,7 @@ from erpnext.hr.doctype.leave_application.leave_application \
 
 
 def execute(filters=None):
-	leave_types = frappe.db.sql_list("select name from `tabLeave Type` order by name asc")
+	leave_types = frappe.db.sql_list("select name from `tabLeave Type` order by creation asc")
 	
 	columns = get_columns(leave_types)
 	data = get_data(filters, leave_types)
@@ -18,14 +18,14 @@ def execute(filters=None):
 	
 def get_columns(leave_types):
 	columns = [
-		_("Employee") + ":Link/Employee:150", 
-		_("Employee Name") + "::200", 
-		_("Department") +"::150"
+		_("Employee") + ":Link/Employee:80", 
+		_("Employee Name") + "::120", 
+		_("Department") +"::40"
 	]
 
 	for leave_type in leave_types:
-		columns.append(_(leave_type) + " " + _("Taken") + ":Float:160")
-		columns.append(_(leave_type) + " " + _("Balance") + ":Float:160")
+		columns.append(_(leave_type) + " " + _("Taken") + ":Float:130")
+		columns.append(_(leave_type) + " " + _("Balance") + ":Float:130")
 	
 	return columns
 	

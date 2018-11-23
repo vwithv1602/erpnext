@@ -319,6 +319,7 @@ def make_serial_no(serial_no, sle):
 		if item[0].get("item_group") == 'Laptops':
 			sr.barcode = serial_no
 	except Exception,e:
+		frappe.msgprint(_("select item_group from `tabItem` where item_code={0}").format(sle.item_code))
 		frappe.throw(_("Exception raised in erpnext.stock.doctype.serial_no.make_serial_no"))
 	sr.insert()
 

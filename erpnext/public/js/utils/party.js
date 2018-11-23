@@ -84,6 +84,15 @@ erpnext.utils.get_address_display = function(frm, address_field, display_field, 
 	if(!display_field) display_field = "address_display";
 	if(frm.doc[address_field]) {
 		frappe.call({
+			method: "erpnext_uyn_customizations.client.get_phone_number_from_address",
+			args: {"address_dict": frm.doc[address_field] },
+			callback: function(r){
+				if(r.message){
+					frm.set_value("contact_mobile",r.message)
+				}
+			}
+		})
+		frappe.call({
 			method: "frappe.contacts.doctype.address.address.get_address_display",
 			args: {"address_dict": frm.doc[address_field] },
 			callback: function(r) {

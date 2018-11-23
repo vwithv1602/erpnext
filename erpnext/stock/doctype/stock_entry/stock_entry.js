@@ -191,6 +191,8 @@ frappe.ui.form.on('Stock Entry', {
 			'voucher_no'		: item.name,
 			'allow_zero_valuation': 1,
 		};
+		console.log("set_basic_rate")
+		console.log(JSON.stringify(args))
 
 		if (item.item_code || item.serial_no) {
 			frappe.call({
@@ -375,6 +377,7 @@ frappe.ui.form.on('Stock Entry Detail', {
 				'voucher_no'		: d.name,
 				'allow_zero_valuation': 1,
 			};
+			console.log(JSON.stringify(args))
 			return frappe.call({
 				doc: frm.doc,
 				method: "get_item_details",
