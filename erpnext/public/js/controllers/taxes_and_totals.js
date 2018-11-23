@@ -16,8 +16,8 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		item.rate = flt(item.rate_with_margin , precision("rate", item));
 
 		if(item.discount_percentage){
-			var discount_value = flt(item.rate_with_margin) * flt(item.discount_percentage) / 100;
-			item.rate = flt((item.rate_with_margin) - (discount_value), precision('rate', item));
+			item.discount_amount = flt(item.rate_with_margin) * flt(item.discount_percentage) / 100;
+			item.rate = flt((item.rate_with_margin) - (item.discount_amount), precision('rate', item));
 		}
 	},
 
@@ -339,11 +339,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 	set_item_wise_tax: function(item, tax, tax_rate, current_tax_amount) {
 		// store tax breakup for each item
 		let tax_detail = tax.item_wise_tax_detail;
-
-		let key = item.item_code;
-		if(item.item_name && !Object.keys(tax_detail).includes(item.item_name)) {
-			key = item.item_name;
-		}
+		let key = item.item_code || item.item_name;
 
 		let item_wise_tax_amount = current_tax_amount * this.frm.doc.conversion_rate;
 		if (tax_detail && tax_detail[key])

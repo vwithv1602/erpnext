@@ -139,7 +139,7 @@ def validate_quantity(doc, args, ref, valid_items, already_returned_items):
 					.format(args.item_code), StockOverReturnError)
 			elif abs(current_stock_qty) > max_returnable_qty:
 				frappe.throw(_("Row # {0}: Cannot return more than {1} for Item {2}")
-					.format(args.idx, reference_qty, args.item_code), StockOverReturnError)
+					.format(args.idx, max_returnable_qty, args.item_code), StockOverReturnError)
 
 def get_ref_item_dict(valid_items, ref_item_row):
 	from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
@@ -151,6 +151,7 @@ def get_ref_item_dict(valid_items, ref_item_row):
 		"rejected_qty": 0,
 		"received_qty": 0,
 		"serial_no": [],
+		"conversion_factor": ref_item_row.get("conversion_factor", 1),
 		"batch_no": []
 	}))
 	item_dict = valid_items[ref_item_row.item_code]
